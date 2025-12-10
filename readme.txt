@@ -66,7 +66,2807 @@ This project is a Capsule AI Assistant, designed as a remixable sanctuary where 
 
 🎯 Purpose
 
-    To create a remixable AI capsule that blends technical rigor with mythic storytelling.
+    To create a remixable AI capsule that blends technical rigor with mythic storytelling. 
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Capsule AI - Adaptive Multi-Agent System</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.5/dist/purify.min.js"></script>
+  <style>
+    /* Previous CSS with additions for new features */
+    :root {
+      --primary-gradient: linear-gradient(135deg, #4e54c8, #8f94fb);
+      --secondary-gradient: linear-gradient(135deg, #b21f1f, #ff5e62);
+      --success-gradient: linear-gradient(135deg, #2ecc71, #27ae60);
+      --warning-gradient: linear-gradient(135deg, #f39c12, #e67e22);
+      --background-gradient: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+      --card-bg: rgba(255, 255, 255, 0.1);
+      --text-color: white;
+      --border-radius: 20px;
+      --transition-speed: 0.3s;
+      --tier-local: #4e54c8;
+      --tier-cloud: #ff6b6b;
+      --tier-premium: #ffd93d;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      background: var(--background-gradient);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      color: var(--text-color);
+      overflow: hidden;
+    }
+
+    .multi-agent-container {
+      display: flex;
+      width: 100%;
+      max-width: 1400px;
+      height: 90vh;
+      gap: 20px;
+    }
+
+    .agents-panel, .chat-container {
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      border-radius: var(--border-radius);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .agents-panel { width: 300px; flex-shrink: 0; }
+    .chat-container { flex: 1; position: relative; }
+
+    /* Header styles */
+    .agents-header, .chat-header {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 20px;
+      text-align: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      position: relative;
+    }
+
+    .agents-header h2, .chat-header h1 { font-size: 1.5rem; margin-bottom: 5px; }
+    .agents-header p, .chat-header p { font-size: 0.9rem; opacity: 0.7; margin: 5px 0; }
+
+    /* Control sections */
+    .agents-controls, .chat-input {
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.3);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    select, input[type="text"], input[type="number"], button {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.15);
+      color: var(--text-color);
+      font-size: 0.95rem;
+      outline: none;
+      transition: all var(--transition-speed) ease;
+    }
+
+    select:focus, input:focus { background: rgba(255, 255, 255, 0.25); box-shadow: 0 0 0 2px rgba(78, 84, 200, 0.5); }
+    button {
+      background: var(--primary-gradient);
+      border: none;
+      color: var(--text-color);
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover:not(:disabled) { transform: scale(1.03); box-shadow: 0 5px 15px rgba(78, 84, 200, 0.4); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Agent list */
+    .active-agents-list {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .agent-item {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all var(--transition-speed) ease;
+      animation: slideIn 0.3s ease-out;
+      position: relative;
+    }
+
+    .agent-item:hover { background: rgba(255, 255, 255, 0.2); }
+
+    .agent-info { flex: 1; min-width: 0; }
+    .agent-name {
+      font-weight: bold;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .agent-model { font-size: 0.8rem; opacity: 0.7; word-break: break-all; }
+
+    .remove-agent {
+      width: 30px;
+      height: 30px;
+      background: rgba(178, 31, 31, 0.7);
+      border-radius: 50%;
+      margin-top: 0;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .remove-agent:hover { background: rgba(178, 31, 31, 1); }
+
+    .agents-count {
+      padding: 15px;
+      text-align: center;
+      font-size: 0.9rem;
+      opacity: 0.7;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .no-active-agents { text-align: center; padding: 20px; opacity: 0.7; }
+
+    /* Tier badge */
+    .tier-badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      color: white;
+    }
+
+    /* Chat messages */
+    .chat-messages {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .message {
+      max-width: 80%;
+      padding: 15px;
+      border-radius: 18px;
+      line-height: 1.5;
+      animation: fadeIn var(--transition-speed) ease-out;
+      position: relative;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .user-message {
+      background: var(--primary-gradient);
+      align-self: flex-end;
+      border-bottom-right-radius: 5px;
+    }
+
+    .ai-message {
+      background: rgba(255, 255, 255, 0.15);
+      align-self: flex-start;
+      border-bottom-left-radius: 5px;
+    }
+
+    .message-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      opacity: 0.9;
+    }
+
+    .message-header i { margin-right: 5px; font-size: 0.75rem; }
+
+    .message-content {
+      font-size: 1rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    /* Feedback buttons */
+    .message-feedback {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      font-size: 0.8rem;
+    }
+
+    .feedback-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      padding: 5px 10px;
+      cursor: pointer;
+      transition: all var(--transition-speed) ease;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .feedback-btn:hover { background: rgba(255, 255, 255, 0.2); }
+    .feedback-btn.active { background: var(--success-gradient); }
+    .feedback-btn.active.thumbs-down { background: var(--secondary-gradient); }
+
+    /* Markdown content */
+    .message-content h1, .message-content h2, .message-content h3,
+    .message-content h4, .message-content h5, .message-content h6 {
+      margin: 10px 0 5px 0;
+      color: rgba(255, 255, 255, 0.9);
+    }
+    .message-content p { margin: 8px 0; }
+    .message-content code {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9em;
+    }
+    .message-content pre {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 12px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 10px 0;
+    }
+    .message-content pre code { background: none; padding: 0; }
+    .message-content blockquote {
+      border-left: 3px solid rgba(255, 255, 255, 0.5);
+      padding-left: 12px;
+      margin: 10px 0;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    /* Typing indicators */
+    .typing-indicator {
+      display: none;
+      background: rgba(255, 255, 255, 0.15);
+      align-self: flex-start;
+      padding: 15px;
+      border-radius: 18px;
+      border-bottom-left-radius: 5px;
+      margin: 0 20px 10px 20px;
+    }
+
+    .typing-indicator span {
+      height: 10px;
+      width: 10px;
+      float: left;
+      margin: 0 2px;
+      background-color: rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      opacity: 0.4;
+      animation: typing 1s infinite;
+    }
+    .typing-indicator span:nth-of-type(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-of-type(3) { animation-delay: 0.4s; }
+
+    @keyframes typing {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+      100% { transform: translateY(0); }
+    }
+
+    .agent-typing {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      padding-left: 20px;
+      animation: fadeIn var(--transition-speed) ease-out;
+    }
+
+    .agent-typing .agent-name { font-weight: bold; opacity: 0.8; }
+
+    .agent-typing .typing-dots {
+      display: flex;
+      gap: 3px;
+    }
+
+    .agent-typing .typing-dots span {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.7);
+      display: inline-block;
+      animation: bounce 1.5s infinite ease-in-out;
+    }
+    .agent-typing .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .agent-typing .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1); }
+    }
+
+    /* Chat input */
+    .chat-input {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    .chat-input input[type="text"] { flex: 1; padding: 15px 20px; border-radius: 30px; }
+    .chat-input button { width: 50px; height: 50px; border-radius: 50%; margin-top: 0; flex-shrink: 0; font-size: 1.2rem; }
+    .chat-input button:hover { transform: scale(1.05); }
+
+    #upload-button, #tools-button, #speak-button { width: 40px; height: 40px; font-size: 1rem; }
+
+    /* Menus */
+    .tools-menu, .chat-history-menu, .settings-menu, .fine-tune-menu {
+      display: none;
+      position: absolute;
+      bottom: 90px;
+      left: 20px;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      color: white;
+      font-size: 0.9rem;
+      min-width: 220px;
+      z-index: 10;
+    }
+
+    .chat-history-menu { bottom: 140px; width: 250px; }
+    .settings-menu { bottom: 190px; width: 280px; }
+    .fine-tune-menu { bottom: 240px; width: 300px; }
+
+    .tools-menu h4, .chat-history-menu h4, .settings-menu h4, .fine-tune-menu h4 {
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .tools-menu label, .chat-menu button, .chat-menu input, .settings-menu label, .fine-tune-menu label {
+      display: block;
+      margin-bottom: 8px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .chat-menu button {
+      background: var(--primary-gradient);
+      border: none;
+      color: white;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      transition: all var(--transition-speed) ease;
+    }
+    .chat-menu button:hover { transform: scale(1.02); box-shadow: 0 0 10px rgba(78, 84, 200, 0.5); }
+
+    .chat-menu input, .settings-menu input, .fine-tune-menu input, .fine-tune-menu select {
+      padding: 8px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      margin-bottom: 10px;
+    }
+
+    .chat-menu input::placeholder, .settings-menu input::placeholder { color: rgba(255, 255, 255, 0.6); }
+
+    .message img, .message video {
+      max-width: 100%;
+      border-radius: 12px;
+      margin-top: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+    .message video { max-height: 300px; }
+
+    /* History button */
+    .history-button {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.15);
+      border: none;
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1rem;
+      transition: all var(--transition-speed) ease;
+    }
+    .history-button:hover { background: rgba(255, 255, 255, 0.25); transform: scale(1.05); }
+
+    .saved-chats-list { max-height: 150px; overflow-y: auto; }
+    .saved-chat-item {
+      padding: 8px;
+      border-radius: 5px;
+      margin-bottom: 5px;
+      background: rgba(255, 255, 255, 0.1);
+      cursor: pointer;
+      transition: all var(--transition-speed) ease;
+    }
+    .saved-chat-item:hover { background: rgba(255, 255, 255, 0.2); }
+
+    /* Metrics panel */
+    .metrics-panel {
+      position: absolute;
+      top: 20px;
+      right: 70px;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      padding: 15px;
+      color: white;
+      font-size: 0.85rem;
+      width: 280px;
+      display: none;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .metrics-panel h4 { margin-bottom: 10px; color: rgba(255, 255, 255, 0.9); }
+
+    .metric-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .metric-label { opacity: 0.8; }
+    .metric-value { font-weight: bold; }
+
+    /* Budget indicator */
+    .budget-indicator {
+      position: absolute;
+      top: 5px;
+      right: 10px;
+      font-size: 0.7rem;
+      opacity: 0.8;
+    }
+
+    .budget-warning { color: #ff6b6b; }
+    .budget-exceeded { color: #ff0000; font-weight: bold; }
+
+    /* Pyramid chart */
+    #pyramid-chart { margin-top: 15px; text-align: center; }
+    #pyramid-chart svg { filter: drop-shadow(0 0 8px rgba(78, 84, 200, 0.4)); }
+
+    /* Notification */
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      max-width: 300px;
+      padding: 15px;
+      border-radius: 12px;
+      transition: opacity 0.3s, transform 0.3s;
+      font-size: 0.9rem;
+    }
+    .notification.error { background: rgba(178, 31, 31, 0.9); border: 1px solid rgba(178, 31, 31, 0.5); }
+    .notification.success { background: rgba(46, 204, 113, 0.9); border: 1px solid rgba(46, 204, 113, 0.5); }
+    .notification.info { background: rgba(78, 84, 200, 0.9); border: 1px solid rgba(78, 84, 200, 0.5); }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.5); }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .multi-agent-container { flex-direction: column; height: 100vh; }
+      .agents-panel { width: 100%; height: 200px; }
+      .chat-container { flex: 1; }
+      .metrics-panel { right: 20px; left: 20px; width: auto; }
+    }
+
+    /* Loading spinner */
+    .loading-spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s ease-in-out infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Connection status */
+    .connection-status {
+      position: absolute;
+      top: 5px;
+      left: 10px;
+      font-size: 0.7rem;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .connection-status.connected { color: #2ecc71; }
+    .connection-status.disconnected { color: #e74c3c; }
+    .connection-status.connecting { color: #f39c12; }
+
+    /* Settings button */
+    .settings-button {
+      position: absolute;
+      top: 20px;
+      right: 170px;
+      background: rgba(255, 255, 255, 0.15);
+      border: none;
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1rem;
+      transition: all var(--transition-speed) ease;
+    }
+    .settings-button:hover { background: rgba(255, 255, 255, 0.25); transform: scale(1.05); }
+    .settings-button.active { background: var(--primary-gradient); }
+
+    /* Fine-tune button */
+    .fine-tune-button {
+      position: absolute;
+      top: 20px;
+      right: 220px;
+      background: rgba(255, 255, 255, 0.15);
+      border: none;
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1rem;
+      transition: all var(--transition-speed) ease;
+    }
+    .fine-tune-button:hover { background: rgba(255, 255, 255, 0.25); transform: scale(1.05); }
+    .fine-tune-button.active { background: var(--warning-gradient); }
+
+    /* Reinforcement button */
+    .reinforcement-button {
+      position: absolute;
+      top: 20px;
+      right: 120px;
+      background: rgba(255, 255, 255, 0.15);
+      border: none;
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1rem;
+      transition: all var(--transition-speed) ease;
+    }
+    .reinforcement-button:hover { background: rgba(255, 255, 255, 0.25); transform: scale(1.05); }
+    .reinforcement-button.active { background: var(--warning-gradient); }
+
+    /* Metrics button */
+    .metrics-button {
+      position: absolute;
+      top: 20px;
+      right: 70px;
+      background: rgba(255, 255, 255, 0.15);
+      border: none;
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1rem;
+      transition: all var(--transition-speed) ease;
+    }
+    .metrics-button:hover { background: rgba(255, 255, 255, 0.25); transform: scale(1.05); }
+
+    /* Fine-tune menu */
+    .fine-tune-menu .setting-group {
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .fine-tune-menu .setting-group:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .fine-tune-menu label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-size: 0.85rem;
+    }
+    .fine-tune-menu input[type="checkbox"] { width: auto; margin: 0; }
+    .fine-tune-menu input[type="number"], .fine-tune-menu select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+    }
+    .fine-tune-menu .setting-description {
+      font-size: 0.75rem;
+      opacity: 0.7;
+      margin-left: 20px;
+      margin-bottom: 10px;
+    }
+
+    /* Fine-tune status */
+    .fine-tune-status {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 15px;
+      border-radius: 12px;
+      max-width: 300px;
+      display: none;
+    }
+    .fine-tune-status.active { display: block; }
+    .fine-tune-status h4 { margin-bottom: 10px; }
+    .fine-tune-status .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+    .fine-tune-status .progress-fill {
+      height: 100%;
+      background: var(--success-gradient);
+      transition: width 0.3s ease;
+    }
+
+    /* Reinforcement panel */
+    .reinforcement-panel {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      padding: 15px;
+      color: white;
+      font-size: 0.85rem;
+      width: 250px;
+      display: none;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .reinforcement-panel.active { display: block; }
+    .reinforcement-panel h4 { margin-bottom: 10px; color: rgba(255, 255, 255, 0.9); }
+    .reinforcement-item {
+      margin-bottom: 10px;
+      padding: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+    }
+    .reinforcement-model { font-weight: bold; }
+    .reinforcement-score { float: right; color: #ffd93d; }
+
+    /* Adaptive budget controls */
+    .adaptive-budget-controls {
+      background: rgba(0, 0, 0, 0.2);
+      padding: 15px;
+      border-radius: 12px;
+      margin-bottom: 15px;
+    }
+    .adaptive-budget-controls h5 {
+      margin-bottom: 10px;
+      font-size: 0.9rem;
+    }
+    .adaptive-budget-controls label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-size: 0.8rem;
+    }
+
+    /* Speak button active state */
+    .speak-active {
+      background: var(--success-gradient) !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="multi-agent-container">
+    <!-- Agents Panel -->
+    <div class="agents-panel" role="complementary" aria-label="Active agents panel">
+      <div class="agents-header">
+        <h2><i class="fas fa-robot"></i> Active Agents</h2>
+        <p>Add models to assist the primary AI</p>
+      </div>
+      
+      <div class="agents-controls">
+        <select id="agent-model-select" aria-label="Select agent model"></select>
+        <button id="add-agent-btn" aria-label="Add assistant agent">
+          <i class="fas fa-plus"></i> Add Assistant
+        </button>
+      </div>
+      
+      <!-- Adaptive Budget Controls -->
+      <div class="adaptive-budget-controls">
+        <h5><i class="fas fa-chart-line"></i> Adaptive Budget</h5>
+        <label>
+          <input type="checkbox" id="enable-adaptive-budget" checked>
+          Enable Adaptive Budget
+        </label>
+        <label>
+          <input type="checkbox" id="auto-expand-budget" checked>
+          Auto-expand when >80%
+        </label>
+        <label>
+          <input type="checkbox" id="auto-reduce-budget">
+          Auto-reduce when <20%
+        </label>
+        <label>
+          Expansion Rate: <input type="number" id="budget-expansion-rate" value="50" min="10" max="200" style="width: 60px; display: inline;">
+          %
+        </label>
+      </div>
+      
+      <div class="active-agents-list" id="active-agents-list" role="list" aria-live="polite">
+        <div class="no-active-agents">No assistant agents added yet</div>
+      </div>
+      
+      <div class="agents-count">
+        <span id="agents-count">0 assistants</span>
+      </div>
+    </div>
+
+    <!-- Chat Container -->
+    <div class="chat-container" role="main" aria-label="Chat interface">
+      <div class="chat-header">
+        <div class="connection-status" id="connection-status" aria-live="polite">
+          <i class="fas fa-circle"></i>
+          <span>Connecting...</span>
+        </div>
+        <h1><i class="fas fa-robot"></i> AI Assistant</h1>
+        <p>Powered by Capsule Backend</p>
+        <select id="primary-model-select" aria-label="Select primary model"></select>
+        
+        <button class="reinforcement-button" id="reinforcement-button" aria-label="Show reinforcement learning">
+          <i class="fas fa-brain"></i>
+        </button>
+        
+        <button class="fine-tune-button" id="fine-tune-button" aria-label="Fine-tune models">
+          <i class="fas fa-graduation-cap"></i>
+        </button>
+        
+        <button class="settings-button" id="settings-button" aria-label="Settings">
+          <i class="fas fa-cog"></i>
+        </button>
+        
+        <button class="metrics-button" id="metrics-button" aria-label="Show performance metrics">
+          <i class="fas fa-chart-line"></i>
+        </button>
+        
+        <button class="history-button" id="history-button" aria-label="Chat history">
+          <i class="fas fa-history"></i>
+        </button>
+      </div>
+      
+      <div class="reinforcement-panel" id="reinforcement-panel" role="dialog" aria-label="Reinforcement learning" aria-hidden="true">
+        <h4><i class="fas fa-brain"></i> Model Performance</h4>
+        <div id="reinforcement-content"></div>
+      </div>
+      
+      <div class="metrics-panel" id="metrics-panel" role="dialog" aria-label="Performance metrics" aria-hidden="true">
+        <h4>Agent Performance Metrics</h4>
+        <div id="metrics-content"></div>
+        <div id="pyramid-chart"></div>
+      </div>
+      
+      <div class="chat-messages" id="chat-messages" role="log" aria-live="polite" aria-atomic="false">
+        <div class="message ai-message" data-message-id="welcome">
+          <div class="message-header">
+            <i class="fas fa-robot"></i> System
+          </div>
+          <div class="message-content">
+            Welcome to the multi-agent chat interface! Select a primary model and add assistants from the panel on the left. All agents will respond to your messages.
+          </div>
+        </div>
+      </div>
+      
+      <div id="typing-agents" aria-live="polite" aria-atomic="false"></div>
+      
+      <div class="chat-input">
+        <button id="upload-button" aria-label="Upload file">
+          <i class="fas fa-plus"></i>
+        </button>
+        <button id="tools-button" aria-label="Tools menu">
+          <i class="fas fa-cogs"></i>
+        </button>
+        <button id="speak-button" aria-label="Text to speech">
+          <i class="fas fa-volume-up"></i>
+        </button>
+        <input type="file" id="file-upload" accept="image/*,video/*" style="display:none" aria-hidden="true">
+        <input type="text" id="user-input" placeholder="Type your message here..." aria-label="Message input" autocomplete="off">
+        <button id="send-button" aria-label="Send message">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
+      
+      <div id="tools-menu" class="tools-menu" role="menu" aria-hidden="true">
+        <h4>Tool Options</h4>
+        <label><input type="checkbox" id="use-search-web"> Use Web Search</label>
+        <label><input type="checkbox" id="use-terminal-ssh"> Use Terminal/SSH</label>
+        <label><input type="checkbox" id="use-vision"> Use Vision (if model supports)</label>
+        <label><input type="checkbox" id="auto-speak"> Auto Speak Responses</label>
+      </div>
+      
+      <div id="chat-history-menu" class="chat-history-menu" role="menu" aria-hidden="true">
+        <h4>Chat History</h4>
+        <input type="text" id="chat-name" placeholder="Enter chat name..." aria-label="Chat name">
+        <button id="save-chat-button">
+          <i class="fas fa-save"></i> Save Current Chat
+        </button>
+        <button id="load-chat-button">
+          <i class="fas fa-folder-open"></i> Load Chat from File
+        </button>
+        <div class="saved-chats-list" id="saved-chats-list" role="list"></div>
+      </div>
+
+      <div id="settings-menu" class="settings-menu" role="menu" aria-hidden="true">
+        <h4>Settings</h4>
+        <div class="setting-group">
+          <label><input type="checkbox" id="enable-budget-limit" checked> Enable Budget Limit</label>
+          <div class="setting-description">When disabled, budget tracking is removed</div>
+          <input type="number" id="budget-limit" placeholder="Budget Limit ($)" value="10.0" step="0.1" min="0">
+        </div>
+        <div class="setting-group">
+          <label><input type="checkbox" id="enable-call-limits" checked> Enable Call Limits</label>
+          <div class="setting-description">When disabled, call count limits are removed</div>
+          <input type="number" id="max-calls-per-agent" placeholder="Max Calls per Agent" value="100" step="1" min="0">
+        </div>
+        <div class="setting-group">
+          <label><input type="checkbox" id="enable-global-call-limit" checked> Enable Global Call Limit</label>
+          <div class="setting-description">When disabled, global call limit is removed</div>
+          <input type="number" id="global-max-calls" placeholder="Global Max Calls" value="1000" step="1" min="0">
+        </div>
+        <button id="reset-budgets-btn" style="background: var(--secondary-gradient); margin-top: 15px;">
+          <i class="fas fa-redo"></i> Reset All Budgets
+        </button>
+      </div>
+
+      <div id="fine-tune-menu" class="fine-tune-menu" role="menu" aria-hidden="true">
+        <h4><i class="fas fa-graduation-cap"></i> Fine-Tuning</h4>
+        <div class="setting-group">
+          <label>Select Model to Fine-Tune:</label>
+          <select id="fine-tune-model-select"></select>
+        </div>
+        <div class="setting-group">
+          <label>Training Data Source:</label>
+          <select id="training-data-source">
+            <option value="chat-history">Chat History</option>
+            <option value="feedback-positive">Positive Feedback Only</option>
+            <option value="custom">Custom Dataset</option>
+          </select>
+        </div>
+        <div class="setting-group">
+          <label>Epochs: <input type="number" id="fine-tune-epochs" value="3" min="1" max="10" style="width: 60px;"></label>
+        </div>
+        <div class="setting-group">
+          <label>Learning Rate: <input type="number" id="fine-tune-lr" value="0.001" step="0.0001" style="width: 80px;"></label>
+        </div>
+        <div class="setting-group">
+          <label><input type="checkbox" id="auto-fine-tune" checked> Auto Fine-Tune on Feedback</label>
+          <div class="setting-description">Automatically fine-tune when positive feedback > 10</div>
+        </div>
+        <button id="start-fine-tune-btn" style="background: var(--warning-gradient);">
+          <i class="fas fa-play"></i> Start Fine-Tuning
+        </button>
+      </div>
+      
+      <div class="fine-tune-status" id="fine-tune-status">
+        <h4><i class="fas fa-graduation-cap"></i> Fine-Tuning Status</h4>
+        <div id="fine-tune-status-text">Idle</div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="fine-tune-progress" style="width: 0%"></div>
+        </div>
+        <button id="cancel-fine-tune-btn" style="background: var(--secondary-gradient); margin-top: 10px;">
+          <i class="fas fa-stop"></i> Cancel
+        </button>
+      </div>
+      
+      <input type="file" id="load-chat-file" accept=".json" style="display:none" aria-hidden="true">
+    </div>
+  </div>
+
+  <script>
+    // ============================================================================
+    // CONFIGURATION
+    // ============================================================================
+    const CONFIG = {
+      API_ENDPOINT: 'http://localhost:3000/api',
+      MAX_AGENTS: 10,
+      DEFAULT_BUDGET: 10.0,
+      TOKEN_COSTS: { local: 0, cloud: 0.001, premium: 0.002 },
+      MAX_TOKENS: { local: 4096, cloud: 8192, premium: 8192 },
+      VIRTUALIZATION_THRESHOLD: 50,
+      DEBOUNCE_DELAY: 100,
+      CONNECTION_CHECK_INTERVAL: 30000,
+      ADAPTIVE_BUDGET_THRESHOLD: 0.8,
+      ADAPTIVE_BUDGET_REDUCTION_THRESHOLD: 0.2,
+      AUTO_FINE_TUNE_FEEDBACK_THRESHOLD: 10
+    };
+
+    // ============================================================================
+    // MODEL DEFINITIONS
+    // ============================================================================
+    const MODELS = [
+      // Local Models (0-20B)
+      { id: 'driaforall/tiny-agent-a:0.5b', name: 'Tiny Agent A', size: '0.5B', tier: 'local', maxTokens: 2048 },
+      { id: 'hhao/qwen2.5-coder-tools:0.5b', name: 'Qwen2.5 Coder Tools', size: '0.5B', tier: 'local', maxTokens: 2048 },
+      { id: 'qwen:0.5b', name: 'Qwen 0.5B', size: '0.5B', tier: 'local', maxTokens: 2048 },
+      { id: 'tinydolphin:1.1b', name: 'TinyDolphin', size: '1.1B', tier: 'local', maxTokens: 2048 },
+      { id: 'tinyllama:1.1b', name: 'TinyLlama', size: '1.1B', tier: 'local', maxTokens: 2048 },
+      { id: 'deepseek-r1:1.5b', name: 'DeepSeek R1', size: '1.5B', tier: 'local', maxTokens: 4096 },
+      { id: 'nehcgs/Arch-Agent:1.5b', name: 'Arch Agent', size: '1.5B', tier: 'local', maxTokens: 4096 },
+      { id: 'granite3.2-vision:2b', name: 'Granite Vision', size: '2B', tier: 'local', maxTokens: 4096 },
+      { id: 'starcoder:3b', name: 'StarCoder', size: '3B', tier: 'local', maxTokens: 4096 },
+      { id: 'deepseek-ocr:3b', name: 'DeepSeek OCR', size: '3B', tier: 'local', maxTokens: 4096 },
+      { id: 'granite-code:3b', name: 'Granite Code', size: '3B', tier: 'local', maxTokens: 4096 },
+      { id: 'gemma3:4b', name: 'Gemma 3', size: '4B', tier: 'local', maxTokens: 4096 },
+      { id: 'alibayram/hunyuan:4b', name: 'Hunyuan', size: '4B', tier: 'local', maxTokens: 4096 },
+      { id: 'nemotron-mini:4b', name: 'Nemotron Mini', size: '4B', tier: 'local', maxTokens: 4096 },
+      { id: 'gurubot/GLM-4.6V-Flash-GGUF:Q4_K_M', name: 'GLM-4.6V Flash GGUF', size: '6.2B', tier: 'local', maxTokens: 4096 },
+      { id: 'codellama:7b', name: 'CodeLlama', size: '7B', tier: 'local', maxTokens: 4096 },
+      { id: 'dolphincoder:7b', name: 'DolphinCoder', size: '7B', tier: 'local', maxTokens: 4096 },
+      { id: 'codegemma:7b', name: 'CodeGemma', size: '7B', tier: 'local', maxTokens: 4096 },
+      { id: 'wizardlm2:7b', name: 'WizardLM2', size: '7B', tier: 'local', maxTokens: 4096 },
+      { id: 'qwen2.5-coder:7b', name: 'Qwen2.5 Coder', size: '7B', tier: 'local', maxTokens: 4096 },
+      { id: 'sam860/granite-4.0:7b', name: 'Granite 4.0', size: '7B', tier: 'local', maxTokens: 4096 },
+      { id: 'granite4:latest', name: 'Granite 4', size: '7B', tier: 'local', maxTokens: 4096 },
+      { id: 'opencoder:8b', name: 'OpenCoder', size: '8B', tier: 'local', maxTokens: 4096 },
+      { id: 'llama3-chatqa:8b', name: 'Llama3 ChatQA', size: '8B', tier: 'local', maxTokens: 4096 },
+      { id: 'sylink/sylink:8b', name: 'SyLink', size: '8B', tier: 'local', maxTokens: 4096 },
+      { id: 'qwen3:8b', name: 'Qwen3', size: '8B', tier: 'local', maxTokens: 4096 },
+      { id: 'deepseek-r1:8b', name: 'DeepSeek R1', size: '8B', tier: 'local', maxTokens: 4096 },
+      { id: 'ministral-3:8b', name: 'MiniStral 3', size: '8B', tier: 'local', maxTokens: 4096 },
+      { id: 'qwen3-vl:8b', name: 'Qwen3 VL', size: '8B', tier: 'local', maxTokens: 4096 },
+      { id: 'koesn/llama3-openbiollm-8b:q6_K', name: 'Llama3 OpenBioLLM', size: '8B', tier: 'local', maxTokens: 4096 },
+      { id: 'granite3.3:8b', name: 'Granite 3.3', size: '8B', tier: 'local', maxTokens: 4096 },
+      { id: 'llama3.2-vision:11b', name: 'Llama3.2 Vision', size: '11B', tier: 'local', maxTokens: 4096 },
+      { id: 'ishumilin/deepseek-r1-coder-tools:14b', name: 'DeepSeek R1 Coder', size: '14B', tier: 'local', maxTokens: 4096 },
+      { id: 'deepseek-coder-v2:16b', name: 'DeepSeek Coder V2', size: '16B', tier: 'local', maxTokens: 4096 },
+      { id: 'second_constantine/gpt-oss-u:20b', name: 'GPT-OSS-U', size: '20B', tier: 'local', maxTokens: 4096 },
+      { id: 'gpt-oss:20b', name: 'GPT-OSS', size: '20B', tier: 'local', maxTokens: 4096 },
+      { id: 'ALIENTELLIGENCE/multiagentv2:latest', name: 'MultiAgent v2', size: '20B', tier: 'local', maxTokens: 4096 },
+
+      // Cloud Models
+      { id: 'gemma3:27b-cloud', name: 'Gemma 3 Cloud', size: '27B', tier: 'cloud', maxTokens: 8192 },
+      { id: 'qwen3-vl:235b-cloud', name: 'Qwen3 VL Cloud', size: '235B', tier: 'cloud', maxTokens: 8192 },
+      { id: 'glm-4.6:cloud', name: 'GLM-4.6', size: '46B', tier: 'cloud', maxTokens: 8192 },
+      { id: 'minimax-m2:cloud', name: 'MiniMax M2', size: '2B', tier: 'cloud', maxTokens: 8192 },
+      { id: 'gemini-3-pro-preview:latest', name: 'Gemini 3 Pro', size: '3B', tier: 'cloud', maxTokens: 8192 },
+      { id: 'gpt-oss:120b-cloud', name: 'GPT-OSS Cloud', size: '120B', tier: 'cloud', maxTokens: 8192 },
+      { id: 'qwen3-coder:480b-cloud', name: 'Qwen3 Coder Cloud', size: '480B', tier: 'cloud', maxTokens: 8192 },
+      { id: 'cogito-2.1:671b-cloud', name: 'Cogito 2.1', size: '671B', tier: 'cloud', maxTokens: 8192 },
+      { id: 'deepseek-v3.1:671b-cloud', name: 'DeepSeek V3.1', size: '671B', tier: 'cloud', maxTokens: 8192 },
+      { id: 'mistral-large-3:675b-cloud', name: 'Mistral Large 3', size: '675B', tier: 'cloud', maxTokens: 8192 },
+      { id: 'kimi-k2-thinking:cloud', name: 'Kimi K2', size: '2B', tier: 'premium', maxTokens: 8192 }
+    ];
+
+    // ============================================================================
+    // STATE MANAGEMENT
+    // ============================================================================
+    class AppState {
+      constructor() {
+        this.isSpeaking = false;
+        this.isProcessing = false;
+        this.chatHistory = [];
+        this.activeAgents = [];
+        this.agentIdCounter = 1;
+        this.responseQueues = {};
+        this.agentMetrics = new Map();
+        this.agentBudgets = new Map();
+        this.globalBudget = { maxCost: CONFIG.DEFAULT_BUDGET, currentCost: 0, tokens: 0 };
+        this.connectionStatus = 'connecting';
+        this.messageVirtualization = {
+          enabled: true,
+          maxMessages: CONFIG.VIRTUALIZATION_THRESHOLD,
+          virtualizedMessages: []
+        };
+        this.settings = {
+          enableBudgetLimit: true,
+          budgetLimit: CONFIG.DEFAULT_BUDGET,
+          enableCallLimits: true,
+          maxCallsPerAgent: 100,
+          enableGlobalCallLimit: true,
+          globalMaxCalls: 1000,
+          enableAdaptiveBudget: true,
+          autoExpandBudget: true,
+          autoReduceBudget: false,
+          budgetExpansionRate: 50,
+          autoFineTune: true
+        };
+        this.feedback = new Map();
+        this.fineTuneJobs = new Map();
+        this.reinforcementScores = new Map();
+        this.memory = { context: [], embeddings: [] };
+      }
+
+      reset() {
+        this.chatHistory = [];
+        this.activeAgents = [];
+        this.agentMetrics.clear();
+        this.agentBudgets.clear();
+        this.globalBudget = { maxCost: this.settings.budgetLimit, currentCost: 0, tokens: 0 };
+        this.agentIdCounter = 1;
+        this.responseQueues = {};
+        this.feedback.clear();
+        this.reinforcementScores.clear();
+      }
+    }
+
+    const state = new AppState();
+
+    // ============================================================================
+    // DOM ELEMENTS
+    // ============================================================================
+    const DOM = {
+      chatMessages: document.getElementById('chat-messages'),
+      userInput: document.getElementById('user-input'),
+      sendButton: document.getElementById('send-button'),
+      uploadButton: document.getElementById('upload-button'),
+      fileUpload: document.getElementById('file-upload'),
+      toolsButton: document.getElementById('tools-button'),
+      toolsMenu: document.getElementById('tools-menu'),
+      primaryModelSelect: document.getElementById('primary-model-select'),
+      agentModelSelect: document.getElementById('agent-model-select'),
+      addAgentBtn: document.getElementById('add-agent-btn'),
+      activeAgentsList: document.getElementById('active-agents-list'),
+      agentsCount: document.getElementById('agents-count'),
+      speakButton: document.getElementById('speak-button'),
+      historyButton: document.getElementById('history-button'),
+      chatHistoryMenu: document.getElementById('chat-history-menu'),
+      saveChatButton: document.getElementById('save-chat-button'),
+      loadChatButton: document.getElementById('load-chat-button'),
+      chatNameInput: document.getElementById('chat-name'),
+      savedChatsList: document.getElementById('saved-chats-list'),
+      loadChatFile: document.getElementById('load-chat-file'),
+      typingAgents: document.getElementById('typing-agents'),
+      metricsButton: document.getElementById('metrics-button'),
+      metricsPanel: document.getElementById('metrics-panel'),
+      metricsContent: document.getElementById('metrics-content'),
+      connectionStatus: document.getElementById('connection-status'),
+      pyramidChart: document.getElementById('pyramid-chart'),
+      settingsButton: document.getElementById('settings-button'),
+      settingsMenu: document.getElementById('settings-menu'),
+      enableBudgetLimit: document.getElementById('enable-budget-limit'),
+      budgetLimit: document.getElementById('budget-limit'),
+      enableCallLimits: document.getElementById('enable-call-limits'),
+      maxCallsPerAgent: document.getElementById('max-calls-per-agent'),
+      enableGlobalCallLimit: document.getElementById('enable-global-call-limit'),
+      globalMaxCalls: document.getElementById('global-max-calls'),
+      resetBudgetsBtn: document.getElementById('reset-budgets-btn'),
+      // New elements
+      reinforcementButton: document.getElementById('reinforcement-button'),
+      reinforcementPanel: document.getElementById('reinforcement-panel'),
+      reinforcementContent: document.getElementById('reinforcement-content'),
+      fineTuneButton: document.getElementById('fine-tune-button'),
+      fineTuneMenu: document.getElementById('fine-tune-menu'),
+      fineTuneModelSelect: document.getElementById('fine-tune-model-select'),
+      trainingDataSource: document.getElementById('training-data-source'),
+      fineTuneEpochs: document.getElementById('fine-tune-epochs'),
+      fineTuneLr: document.getElementById('fine-tune-lr'),
+      autoFineTune: document.getElementById('auto-fine-tune'),
+      startFineTuneBtn: document.getElementById('start-fine-tune-btn'),
+      fineTuneStatus: document.getElementById('fine-tune-status'),
+      fineTuneStatusText: document.getElementById('fine-tune-status-text'),
+      fineTuneProgress: document.getElementById('fine-tune-progress'),
+      cancelFineTuneBtn: document.getElementById('cancel-fine-tune-btn'),
+      // Adaptive budget controls
+      enableAdaptiveBudget: document.getElementById('enable-adaptive-budget'),
+      autoExpandBudget: document.getElementById('auto-expand-budget'),
+      autoReduceBudget: document.getElementById('auto-reduce-budget'),
+      budgetExpansionRate: document.getElementById('budget-expansion-rate')
+    };
+
+    // ============================================================================
+    // UTILITY FUNCTIONS
+    // ============================================================================
+    const utils = {
+      debounce: (func, wait) => {
+        let timeout;
+        return (...args) => {
+          clearTimeout(timeout);
+          timeout = setTimeout(() => func(...args), wait);
+        };
+      },
+
+      generateId: () => Date.now() + Math.random(),
+
+      safeMarkdown: (text) => {
+        const html = marked.parse(text, { breaks: true, gfm: true });
+        return DOMPurify.sanitize(html, { USE_PROFILES: { html: true } });
+      },
+
+      formatCurrency: (amount) => `$${amount.toFixed(2)}`,
+
+      formatNumber: (num) => num.toLocaleString(),
+
+      getModelById: (id) => MODELS.find(m => m.id === id),
+
+      getTierInfo: (model) => {
+        const tier = model.tier;
+        return {
+          tier,
+          color: `var(--tier-${tier})`,
+          costPerToken: CONFIG.TOKEN_COSTS[tier] || 0,
+          maxTokens: CONFIG.MAX_TOKENS[tier] || 2048
+        };
+      },
+
+      showNotification: (message, type = 'info') => {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.setAttribute('role', 'alert');
+        notification.textContent = message;
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+          notification.style.opacity = '0';
+          notification.style.transform = 'translateY(-20px)';
+          setTimeout(() => notification.remove(), 300);
+        }, 3000);
+      },
+
+      updateConnectionStatus: (status) => {
+        state.connectionStatus = status;
+        const statusEl = DOM.connectionStatus;
+        const icon = statusEl.querySelector('i');
+        const text = statusEl.querySelector('span');
+        
+        statusEl.className = `connection-status ${status}`;
+        icon.className = status === 'connected' ? 'fas fa-circle' : 
+                        status === 'disconnected' ? 'fas fa-times-circle' : 
+                        'fas fa-spinner fa-spin';
+        text.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+      }
+    };
+
+    // ============================================================================
+    // MODEL MANAGEMENT
+    // ============================================================================
+    const modelManager = {
+      populateSelects: () => {
+        [DOM.primaryModelSelect, DOM.agentModelSelect, DOM.fineTuneModelSelect].forEach(select => {
+          select.innerHTML = '';
+          const localGroup = document.createElement('optgroup');
+          localGroup.label = '🖥️ Local Models';
+          const cloudGroup = document.createElement('optgroup');
+          cloudGroup.label = '☁️ Cloud Models';
+          
+          MODELS.forEach(model => {
+            const option = document.createElement('option');
+            option.value = model.id;
+            option.textContent = `${model.name} (${model.size})`;
+            
+            if (model.tier === 'local') {
+              localGroup.appendChild(option);
+            } else {
+              cloudGroup.appendChild(option);
+            }
+          });
+          
+          select.appendChild(localGroup);
+          select.appendChild(cloudGroup);
+        });
+      },
+
+      getAgentName: (modelId) => {
+        const model = utils.getModelById(modelId);
+        return model ? model.name : modelId.split(':')[0].split('/').pop() + ' Assistant';
+      },
+
+      getTierBadge: (modelId) => {
+        const model = utils.getModelById(modelId);
+        if (!model) return '';
+        const tierInfo = utils.getTierInfo(model);
+        return `<span class="tier-badge tier-${tierInfo.tier}" style="background: ${tierInfo.color}">${tierInfo.tier}</span>`;
+      }
+    };
+
+    // ============================================================================
+    // BACKEND API CLIENT
+    // ============================================================================
+    const apiClient = {
+      async request(endpoint, options = {}) {
+        const url = `${CONFIG.API_ENDPOINT}${endpoint}`;
+        const config = {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          ...options
+        };
+        
+        try {
+          const response = await fetch(url, config);
+          if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          return await response.json();
+        } catch (err) {
+          console.error(`API Error (${endpoint}):`, err);
+          throw err;
+        }
+      },
+
+      // Memory endpoints
+      async saveMemory(userId, sessionId, context, embeddings) {
+        return this.request('/memory', {
+          method: 'POST',
+          body: JSON.stringify({ userId, sessionId, context, embeddings })
+        });
+      },
+
+      async loadMemory(userId, sessionId) {
+        return this.request(`/memory?userId=${userId}&sessionId=${sessionId}`);
+      },
+
+      // Feedback endpoints
+      async saveFeedback(messageId, rating, comment = '') {
+        return this.request('/feedback', {
+          method: 'POST',
+          body: JSON.stringify({ messageId, rating, comment })
+        });
+      },
+
+      async getFeedbackStats() {
+        return this.request('/feedback/stats');
+      },
+
+      // Fine-tuning endpoints
+      async startFineTune(modelId, dataSource, epochs, learningRate) {
+        return this.request('/fine-tune', {
+          method: 'POST',
+          body: JSON.stringify({ modelId, dataSource, epochs, learningRate })
+        });
+      },
+
+      async getFineTuneStatus(jobId) {
+        return this.request(`/fine-tune/status?jobId=${jobId}`);
+      },
+
+      async cancelFineTune(jobId) {
+        return this.request('/fine-tune/cancel', {
+          method: 'POST',
+          body: JSON.stringify({ jobId })
+        });
+      },
+
+      // Reinforcement endpoints
+      async updateReinforcementScore(modelId, score) {
+        return this.request('/reinforce', {
+          method: 'POST',
+          body: JSON.stringify({ modelId, score })
+        });
+      },
+
+      async getReinforcementScores() {
+        return this.request('/reinforce/scores');
+      },
+
+      // Chat endpoint
+      async chat(modelId, prompt, stream = true, signal = null) {
+        const url = `${CONFIG.API_ENDPOINT}/chat`;
+        const options = {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model: modelId, prompt, stream }),
+        };
+        if (signal) options.signal = signal;
+        
+        const response = await fetch(url, options);
+        if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        return response;
+      }
+    };
+
+    // ============================================================================
+    // BUDGET MANAGEMENT (Enhanced with Adaptive Logic)
+    // ============================================================================
+    const budgetManager = {
+      initAgentBudget: (agentId, modelId) => {
+        if (state.agentBudgets.has(agentId)) return;
+        
+        const model = utils.getModelById(modelId);
+        const tierInfo = utils.getTierInfo(model);
+        
+        state.agentBudgets.set(agentId, {
+          calls: 0,
+          maxCalls: state.settings.maxCallsPerAgent,
+          cost: 0,
+          tokensUsed: 0,
+          maxCost: tierInfo.costPerToken > 0 ? state.settings.budgetLimit : Infinity,
+          maxTokens: tierInfo.maxTokens,
+          modelId,
+          lastAdjustment: Date.now()
+        });
+      },
+
+      canCall: (agentId, modelId) => {
+        // Check if limits are enabled
+        if (!state.settings.enableCallLimits && !state.settings.enableGlobalCallLimit) {
+          return true;
+        }
+
+        budgetManager.initAgentBudget(agentId, modelId);
+        const budget = state.agentBudgets.get(agentId);
+        
+        // Adaptive budget adjustment
+        if (state.settings.enableAdaptiveBudget) {
+          budgetManager.checkAdaptiveAdjustment(agentId, budget);
+        }
+        
+        // Check per-agent call limit
+        if (state.settings.enableCallLimits && budget.calls >= budget.maxCalls) {
+          utils.showNotification(`Call limit exceeded for ${modelManager.getAgentName(modelId)}`, 'error');
+          return false;
+        }
+        
+        // Check global call limit
+        if (state.settings.enableGlobalCallLimit) {
+          const totalCalls = Array.from(state.agentBudgets.values()).reduce((sum, b) => sum + b.calls, 0);
+          if (totalCalls >= state.settings.globalMaxCalls) {
+            utils.showNotification(`Global call limit exceeded`, 'error');
+            return false;
+          }
+        }
+        
+        // Check budget limit
+        if (state.settings.enableBudgetLimit && budget.cost >= budget.maxCost) {
+          utils.showNotification(`Budget exceeded for ${modelManager.getAgentName(modelId)}`, 'error');
+          return false;
+        }
+        
+        budget.calls++;
+        return true;
+      },
+
+      checkAdaptiveAdjustment: (agentId, budget) => {
+        const now = Date.now();
+        const timeSinceLastAdjustment = now - budget.lastAdjustment;
+        
+        // Only adjust every 5 minutes to prevent thrashing
+        if (timeSinceLastAdjustment < 300000) return;
+        
+        const usagePercent = budget.calls / budget.maxCalls;
+        const costPercent = budget.cost / budget.maxCost;
+        const highestPercent = Math.max(usagePercent, costPercent);
+        
+        // Auto-expand if usage > 80%
+        if (state.settings.autoExpandBudget && highestPercent > CONFIG.ADAPTIVE_BUDGET_THRESHOLD) {
+          const expansionAmount = Math.floor(budget.maxCalls * (state.settings.budgetExpansionRate / 100));
+          budget.maxCalls += expansionAmount;
+          budget.maxCost += budget.maxCost * (state.settings.budgetExpansionRate / 100);
+          budget.lastAdjustment = now;
+          utils.showNotification(`Budget expanded by ${state.settings.budgetExpansionRate}% for ${modelManager.getAgentName(budget.modelId)}`, 'success');
+        }
+        
+        // Auto-reduce if usage < 20% and enabled
+        if (state.settings.autoReduceBudget && highestPercent < CONFIG.ADAPTIVE_BUDGET_REDUCTION_THRESHOLD) {
+          const reductionAmount = Math.floor(budget.maxCalls * 0.1); // Reduce by 10%
+          budget.maxCalls = Math.max(50, budget.maxCalls - reductionAmount); // Minimum 50 calls
+          budget.maxCost = Math.max(1, budget.maxCost * 0.9); // Minimum $1
+          budget.lastAdjustment = now;
+          utils.showNotification(`Budget reduced by 10% for ${modelManager.getAgentName(budget.modelId)}`, 'info');
+        }
+      },
+
+      updateCost: (agentId, tokens) => {
+        if (!state.settings.enableBudgetLimit) return;
+
+        const budget = state.agentBudgets.get(agentId);
+        if (!budget) return;
+        
+        const model = utils.getModelById(budget.modelId);
+        const tierInfo = utils.getTierInfo(model);
+        const cost = tokens * tierInfo.costPerToken;
+        
+        budget.tokensUsed += tokens;
+        budget.cost += cost;
+        state.globalBudget.currentCost += cost;
+        state.globalBudget.tokens += tokens;
+        
+        budgetManager.updateIndicator(agentId);
+        
+        // Update reinforcement score based on usage
+        reinforcementManager.updateScore(budget.modelId, tokens * 0.001);
+      },
+
+      updateIndicator: (agentId) => {
+        const agentElement = document.querySelector(`[data-agent-id="${agentId}"]`);
+        if (!agentElement) return;
+        
+        const budget = state.agentBudgets.get(agentId);
+        let indicator = agentElement.querySelector('.budget-indicator');
+        
+        if (!indicator) {
+          indicator = document.createElement('div');
+          indicator.className = 'budget-indicator';
+          agentElement.appendChild(indicator);
+        }
+        
+        const usagePercent = budget.calls / budget.maxCalls;
+        const costPercent = budget.cost / budget.maxCost;
+        const highestPercent = Math.max(usagePercent, costPercent);
+        let className = '';
+        let text = '';
+        
+        if (highestPercent >= 1) {
+          className = 'budget-exceeded';
+          text = `Budget exceeded • ${utils.formatCurrency(budget.cost)}`;
+        } else if (highestPercent > 0.8) {
+          className = 'budget-warning';
+          text = `Budget warning • ${utils.formatCurrency(budget.cost)}`;
+        } else {
+          text = `${budget.calls}/${budget.maxCalls} • ${utils.formatCurrency(budget.cost)}`;
+        }
+        
+        indicator.className = `budget-indicator ${className}`;
+        indicator.textContent = text;
+      },
+
+      resetAll: () => {
+        state.agentBudgets.forEach((budget, agentId) => {
+          budget.calls = 0;
+          budget.cost = 0;
+          budget.tokensUsed = 0;
+          budget.lastAdjustment = Date.now();
+          budgetManager.updateIndicator(agentId);
+        });
+        state.globalBudget.currentCost = 0;
+        state.globalBudget.tokens = 0;
+        utils.showNotification('All budgets reset successfully', 'success');
+        metricsManager.render();
+      }
+    };
+
+    // ============================================================================
+    // MEMORY MANAGEMENT (Persistent)
+    // ============================================================================
+    const memoryManager = {
+      async saveMemory() {
+        try {
+          const userId = 'anonymous'; // In real app, use actual user ID
+          const sessionId = localStorage.getItem('sessionId') || utils.generateId();
+          localStorage.setItem('sessionId', sessionId);
+          
+          // Prepare context from chat history
+          const context = state.chatHistory.map(msg => ({
+            role: msg.isUser ? 'user' : 'assistant',
+            content: msg.text,
+            model: msg.modelId,
+            timestamp: msg.timestamp
+          }));
+          
+          // Generate embeddings for recent messages (simplified)
+          const embeddings = await this.generateEmbeddings(context.slice(-10));
+          
+          await apiClient.saveMemory(userId, sessionId, context, embeddings);
+          utils.showNotification('Memory saved successfully', 'success');
+        } catch (err) {
+          console.error('Failed to save memory:', err);
+          utils.showNotification('Failed to save memory', 'error');
+        }
+      },
+
+      async loadMemory() {
+        try {
+          const userId = 'anonymous';
+          const sessionId = localStorage.getItem('sessionId');
+          
+          if (!sessionId) return null;
+          
+          const memory = await apiClient.loadMemory(userId, sessionId);
+          if (memory && memory.context) {
+            // Preload context into agents
+            state.memory = memory;
+            utils.showNotification('Memory loaded successfully', 'success');
+            return memory;
+          }
+        } catch (err) {
+          console.error('Failed to load memory:', err);
+        }
+        return null;
+      },
+
+      async generateEmbeddings(texts) {
+        // Simplified embedding generation - in production use a proper embedding model
+        return texts.map((text, i) => ({
+          id: utils.generateId(),
+          vector: new Array(768).fill(0).map(() => Math.random()), // Random embeddings for demo
+          text: typeof text === 'string' ? text : text.content,
+          timestamp: text.timestamp || Date.now()
+        }));
+      },
+
+      async searchMemory(query, limit = 5) {
+        try {
+          const embeddings = await this.generateEmbeddings([query]);
+          const queryVector = embeddings[0].vector;
+          
+          // Simple cosine similarity search
+          const similarities = state.memory.embeddings.map(emb => ({
+            ...emb,
+            similarity: this.cosineSimilarity(queryVector, emb.vector)
+          }));
+          
+          return similarities
+            .sort((a, b) => b.similarity - a.similarity)
+            .slice(0, limit);
+        } catch (err) {
+          console.error('Memory search failed:', err);
+          return [];
+        }
+      },
+
+      cosineSimilarity(a, b) {
+        const dotProduct = a.reduce((sum, val, i) => sum + val * b[i], 0);
+        const magnitudeA = Math.sqrt(a.reduce((sum, val) => sum + val * val, 0));
+        const magnitudeB = Math.sqrt(b.reduce((sum, val) => sum + val * val, 0));
+        return dotProduct / (magnitudeA * magnitudeB);
+      }
+    };
+
+    // ============================================================================
+    // FEEDBACK MANAGEMENT
+    // ============================================================================
+    const feedbackManager = {
+      async addFeedback(messageId, rating, comment = '') {
+        try {
+          await apiClient.saveFeedback(messageId, rating, comment);
+          
+          // Store locally
+          state.feedback.set(messageId, {
+            rating, // 1 for thumbs up, -1 for thumbs down
+            comment,
+            timestamp: Date.now()
+          });
+          
+          // Update reinforcement score
+          const message = state.chatHistory.find(m => m.id === messageId);
+          if (message && message.modelId) {
+            reinforcementManager.updateScore(message.modelId, rating * 10);
+          }
+          
+          // Check for auto fine-tuning
+          if (state.settings.autoFineTune) {
+            const positiveCount = Array.from(state.feedback.values())
+              .filter(f => f.rating > 0).length;
+            
+            if (positiveCount >= CONFIG.AUTO_FINE_TUNE_FEEDBACK_THRESHOLD) {
+              const modelId = message?.modelId || DOM.primaryModelSelect.value;
+              fineTuneManager.startFineTune(modelId, 'feedback-positive', 3, 0.001);
+            }
+          }
+          
+          utils.showNotification('Feedback saved', 'success');
+        } catch (err) {
+          utils.showNotification('Failed to save feedback', 'error');
+        }
+      },
+
+      renderFeedbackButtons(messageId) {
+        const feedbackDiv = document.createElement('div');
+        feedbackDiv.className = 'message-feedback';
+        
+        const thumbsUp = document.createElement('button');
+        thumbsUp.className = 'feedback-btn thumbs-up';
+        thumbsUp.innerHTML = '<i class="fas fa-thumbs-up"></i>';
+        thumbsUp.title = 'Good response';
+        thumbsUp.onclick = () => {
+          feedbackManager.addFeedback(messageId, 1);
+          thumbsUp.classList.add('active');
+          thumbsDown.classList.remove('active');
+        };
+        
+        const thumbsDown = document.createElement('button');
+        thumbsDown.className = 'feedback-btn thumbs-down';
+        thumbsDown.innerHTML = '<i class="fas fa-thumbs-down"></i>';
+        thumbsDown.title = 'Poor response';
+        thumbsDown.onclick = () => {
+          feedbackManager.addFeedback(messageId, -1);
+          thumbsDown.classList.add('active');
+          thumbsUp.classList.remove('active');
+        };
+        
+        const commentBtn = document.createElement('button');
+        commentBtn.className = 'feedback-btn comment';
+        commentBtn.innerHTML = '<i class="fas fa-comment"></i>';
+        commentBtn.title = 'Add comment';
+        commentBtn.onclick = () => {
+          const comment = prompt('Enter your feedback:');
+          if (comment) {
+            feedbackManager.addFeedback(messageId, 1, comment);
+          }
+        };
+        
+        feedbackDiv.appendChild(thumbsUp);
+        feedbackDiv.appendChild(thumbsDown);
+        feedbackDiv.appendChild(commentBtn);
+        
+        return feedbackDiv;
+      }
+    };
+
+    // ============================================================================
+    // FINE-TUNING MANAGEMENT
+    // ============================================================================
+    const fineTuneManager = {
+      currentJob: null,
+
+      async startFineTune(modelId, dataSource, epochs, learningRate) {
+        try {
+          const job = await apiClient.startFineTune(modelId, dataSource, epochs, learningRate);
+          state.fineTuneJobs.set(job.id, job);
+          this.currentJob = job;
+          
+          DOM.fineTuneStatus.classList.add('active');
+          DOM.fineTuneStatusText.textContent = `Starting fine-tuning for ${modelId}...`;
+          
+          this.monitorFineTune(job.id);
+          utils.showNotification('Fine-tuning job started', 'success');
+        } catch (err) {
+          utils.showNotification('Failed to start fine-tuning: ' + err.message, 'error');
+        }
+      },
+
+      async monitorFineTune(jobId) {
+        const interval = setInterval(async () => {
+          try {
+            const status = await apiClient.getFineTuneStatus(jobId);
+            const job = state.fineTuneJobs.get(jobId);
+            Object.assign(job, status);
+            
+            DOM.fineTuneStatusText.textContent = `${status.status}: ${status.progress}%`;
+            DOM.fineTuneProgress.style.width = `${status.progress}%`;
+            
+            if (status.status === 'completed') {
+              clearInterval(interval);
+              DOM.fineTuneStatus.classList.remove('active');
+              utils.showNotification('Fine-tuning completed successfully!', 'success');
+              reinforcementManager.updateScore(job.modelId, 50); // Reward for completion
+            } else if (status.status === 'failed') {
+              clearInterval(interval);
+              DOM.fineTuneStatus.classList.remove('active');
+              utils.showNotification('Fine-tuning failed: ' + status.error, 'error');
+            }
+          } catch (err) {
+            console.error('Fine-tune monitoring error:', err);
+          }
+        }, 5000);
+      },
+
+      async cancelFineTune() {
+        if (!this.currentJob) return;
+        
+        try {
+          await apiClient.cancelFineTune(this.currentJob.id);
+          DOM.fineTuneStatus.classList.remove('active');
+          utils.showNotification('Fine-tuning cancelled', 'info');
+        } catch (err) {
+          utils.showNotification('Failed to cancel fine-tuning', 'error');
+        }
+      }
+    };
+
+    // ============================================================================
+    // REINFORCEMENT LEARNING
+    // ============================================================================
+    const reinforcementManager = {
+      async updateScore(modelId, delta) {
+        try {
+          await apiClient.updateReinforcementScore(modelId, delta);
+          
+          const currentScore = state.reinforcementScores.get(modelId) || 0;
+          const newScore = currentScore + delta;
+          state.reinforcementScores.set(modelId, newScore);
+          
+          // Decay old scores
+          this.applyDecay();
+          
+          // Re-render if panel is open
+          if (DOM.reinforcementPanel.classList.contains('active')) {
+            this.renderScores();
+          }
+        } catch (err) {
+          console.error('Failed to update reinforcement score:', err);
+        }
+      },
+
+      async loadScores() {
+        try {
+          const scores = await apiClient.getReinforcementScores();
+          state.reinforcementScores = new Map(Object.entries(scores));
+          this.renderScores();
+        } catch (err) {
+          console.error('Failed to load reinforcement scores:', err);
+        }
+      },
+
+      applyDecay() {
+        const decayRate = 0.99; // 1% decay per update
+        state.reinforcementScores.forEach((score, modelId) => {
+          state.reinforcementScores.set(modelId, score * decayRate);
+        });
+      },
+
+      getBestModelForTask(taskDescription) {
+        // Simple implementation - in production use embeddings and task similarity
+        const scores = Array.from(state.reinforcementScores.entries())
+          .filter(([modelId]) => utils.getModelById(modelId))
+          .sort((a, b) => b[1] - a[1]);
+        
+        return scores.length > 0 ? scores[0][0] : DOM.primaryModelSelect.value;
+      },
+
+      renderScores() {
+        const scores = Array.from(state.reinforcementScores.entries())
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 10);
+        
+        DOM.reinforcementContent.innerHTML = scores.map(([modelId, score]) => `
+          <div class="reinforcement-item">
+            <span class="reinforcement-model">${modelManager.getAgentName(modelId)}</span>
+            <span class="reinforcement-score">${score.toFixed(2)}</span>
+            <div style="clear: both;"></div>
+          </div>
+        `).join('');
+      }
+    };
+
+    // ============================================================================
+    // METRICS MANAGEMENT (Enhanced)
+    // ============================================================================
+    const metricsManager = {
+      record: (agentId, modelId, latencyMs, tokens = 0, error = false) => {
+        const metrics = state.agentMetrics.get(agentId) || {
+          count: 0,
+          avgMs: 0,
+          tokens: 0,
+          cost: 0,
+          errors: 0,
+          feedbackScore: 0
+        };
+        
+        metrics.avgMs = (metrics.avgMs * metrics.count + latencyMs) / (metrics.count + 1);
+        metrics.tokens += tokens;
+        metrics.count++;
+        if (error) metrics.errors++;
+        
+        // Update feedback score
+        const feedback = state.feedback.get(agentId);
+        if (feedback) {
+          metrics.feedbackScore = feedback.rating;
+        }
+        
+        budgetManager.updateCost(agentId, tokens);
+        state.agentMetrics.set(agentId, metrics);
+      },
+
+      render: () => {
+        const metrics = [];
+        
+        // Global budget
+        const budgetPercent = (state.globalBudget.currentCost / state.globalBudget.maxCost) * 100;
+        const budgetClass = budgetPercent > 90 ? 'budget-exceeded' : budgetPercent > 70 ? 'budget-warning' : '';
+        
+        metrics.push(`
+          <div class="metric-item">
+            <span class="metric-label">Session Budget</span>
+            <span class="metric-value ${budgetClass}">${utils.formatCurrency(state.globalBudget.currentCost)} / ${utils.formatCurrency(state.globalBudget.maxCost)}</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">Total Tokens</span>
+            <span class="metric-value">${utils.formatNumber(state.globalBudget.tokens)}</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">Adaptive Budget</span>
+            <span class="metric-value">${state.settings.enableAdaptiveBudget ? 'Enabled' : 'Disabled'}</span>
+          </div>
+          <hr style="margin: 10px 0; border: none; border-top: 1px solid rgba(255,255,255,0.2);">
+        `);
+        
+        // Per-agent metrics
+        state.activeAgents.forEach(agent => {
+          const agentMetrics = state.agentMetrics.get(agent.id);
+          if (!agentMetrics) return;
+          
+          const avgLatency = Math.round(agentMetrics.avgMs);
+          const successRate = ((agentMetrics.count - agentMetrics.errors) / agentMetrics.count * 100).toFixed(1);
+          const cost = agentMetrics.cost.toFixed(3);
+          const feedbackScore = agentMetrics.feedbackScore;
+          
+          metrics.push(`
+            <div class="metric-item">
+              <div style="font-weight: bold; margin-bottom: 5px;">
+                ${agent.name} ${modelManager.getTierBadge(agent.model)}
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">Avg Latency</span>
+                <span class="metric-value">${avgLatency}ms</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">Success Rate</span>
+                <span class="metric-value">${successRate}%</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">Tokens</span>
+                <span class="metric-value">${utils.formatNumber(agentMetrics.tokens)}</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">Cost</span>
+                <span class="metric-value">$${cost}</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">Feedback</span>
+                <span class="metric-value">${feedbackScore > 0 ? '👍' : feedbackScore < 0 ? '👎' : '—'}</span>
+              </div>
+              <hr style="margin: 8px 0; border: none; border-top: 1px solid rgba(255,255,255,0.1);">
+            </div>
+          `);
+        });
+        
+        DOM.metricsContent.innerHTML = metrics.join('');
+        metricsManager.renderPyramid();
+      },
+
+      renderPyramid: () => {
+        const tiers = { Colossi: 0, Titans: 0, Architects: 0, Builders: 0, Scouts: 0 };
+        
+        const countAgent = (modelId) => {
+          const model = utils.getModelById(modelId);
+          if (!model) return;
+          
+          const size = parseFloat(model.size) || 0;
+          const tier = model.tier;
+          
+          if (tier === 'premium' || modelId.includes('kimi')) tiers.Colossi++;
+          else if (tier === 'cloud') {
+            if (size >= 400) tiers.Colossi++;
+            else if (size >= 100) tiers.Titans++;
+            else tiers.Architects++;
+          } else { // local
+            if (size >= 10) tiers.Architects++;
+            else if (size >= 5) tiers.Builders++;
+            else tiers.Scouts++;
+          }
+        };
+        
+        countAgent(DOM.primaryModelSelect.value);
+        state.activeAgents.forEach(agent => countAgent(agent.model));
+        
+        const svg = `
+          <svg width="260" height="200" style="margin-top: 15px;">
+            <defs>
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                <feMerge>
+                  <feMergeNode in="coloredBlur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+            <polygon points="130,10 250,190 10,190" fill="#4e54c8" opacity="0.6" filter="url(#glow)"/>
+            <text x="130" y="30" text-anchor="middle" fill="white" font-size="14" font-weight="bold">Colossi: ${tiers.Colossi}</text>
+            <text x="130" y="70" text-anchor="middle" fill="white" font-size="14" font-weight="bold">Titans: ${tiers.Titans}</text>
+            <text x="130" y="110" text-anchor="middle" fill="white" font-size="14" font-weight="bold">Architects: ${tiers.Architects}</text>
+            <text x="130" y="150" text-anchor="middle" fill="white" font-size="14" font-weight="bold">Builders: ${tiers.Builders}</text>
+            <text x="130" y="180" text-anchor="middle" fill="white" font-size="14" font-weight="bold">Scouts: ${tiers.Scouts}</text>
+          </svg>`;
+        
+        DOM.pyramidChart.innerHTML = svg;
+      }
+    };
+
+    // ============================================================================
+    // AGENT MANAGEMENT
+    // ============================================================================
+    const agentManager = {
+      add: () => {
+        const modelId = DOM.agentModelSelect.value;
+        const agentName = modelManager.getAgentName(modelId);
+        
+        if (state.activeAgents.length >= CONFIG.MAX_AGENTS) {
+          utils.showNotification(`Maximum ${CONFIG.MAX_AGENTS} agents allowed`, 'error');
+          return;
+        }
+        
+        if (state.activeAgents.some(agent => agent.model === modelId)) {
+          utils.showNotification('Agent already exists!', 'error');
+          return;
+        }
+        
+        const agent = {
+          id: state.agentIdCounter++,
+          name: agentName,
+          model: modelId,
+          tier: utils.getModelById(modelId)?.tier || 'local',
+          isProcessing: false
+        };
+        
+        state.activeAgents.push(agent);
+        state.responseQueues[agent.id] = [];
+        
+        // Initialize budget and metrics
+        budgetManager.initAgentBudget(agent.id, modelId);
+        state.agentMetrics.set(agent.id, {
+          count: 0,
+          avgMs: 0,
+          tokens: 0,
+          cost: 0,
+          errors: 0,
+          feedbackScore: 0
+        });
+        
+        agentManager.renderList();
+        utils.showNotification(`Added ${agentName}`, 'success');
+        metricsManager.render();
+      },
+
+      remove: (agentId) => {
+        const agent = state.activeAgents.find(a => a.id === agentId);
+        if (!agent) return;
+        
+        state.activeAgents = state.activeAgents.filter(a => a.id !== agentId);
+        delete state.responseQueues[agentId];
+        state.agentMetrics.delete(agentId);
+        state.agentBudgets.delete(agentId);
+        
+        agentManager.renderList();
+        utils.showNotification(`Removed ${agent.name}`, 'success');
+        metricsManager.render();
+      },
+
+      renderList: () => {
+        DOM.activeAgentsList.innerHTML = '';
+        
+        if (state.activeAgents.length === 0) {
+          DOM.activeAgentsList.innerHTML = '<div class="no-active-agents">No assistant agents added yet</div>';
+        } else {
+          state.activeAgents.forEach(agent => {
+            const agentElement = document.createElement('div');
+            agentElement.className = 'agent-item';
+            agentElement.setAttribute('role', 'listitem');
+            agentElement.setAttribute('data-agent-id', agent.id);
+            
+            agentElement.innerHTML = `
+              <div class="agent-info">
+                <div class="agent-name">
+                  ${agent.name}
+                  ${modelManager.getTierBadge(agent.model)}
+                </div>
+                <div class="agent-model">${agent.model}</div>
+              </div>
+              <button class="remove-agent" data-id="${agent.id}" aria-label="Remove ${agent.name}">
+                <i class="fas fa-times"></i>
+              </button>
+            `;
+            
+            DOM.activeAgentsList.appendChild(agentElement);
+            budgetManager.updateIndicator(agent.id);
+          });
+          
+          // Add event listeners to remove buttons
+          DOM.activeAgentsList.querySelectorAll('.remove-agent').forEach(button => {
+            button.addEventListener('click', (e) => {
+              const agentId = parseInt(e.currentTarget.dataset.id);
+              agentManager.remove(agentId);
+            });
+          });
+        }
+        
+        DOM.agentsCount.textContent = `${state.activeAgents.length} assistant${state.activeAgents.length !== 1 ? 's' : ''}`;
+      }
+    };
+
+    // ============================================================================
+    // CHAT MANAGEMENT (Enhanced with Memory & Feedback)
+    // ============================================================================
+    const chatManager = {
+      async addMessage(text, isUser, agentName = null, modelId = null) {
+        const messageData = {
+          id: utils.generateId(),
+          text,
+          isUser,
+          agentName,
+          modelId,
+          timestamp: new Date().toISOString(),
+          feedback: null
+        };
+        
+        state.chatHistory.push(messageData);
+        
+        // Virtualization
+        if (state.chatHistory.length > CONFIG.VIRTUALIZATION_THRESHOLD) {
+          const oldMessage = state.chatHistory[state.chatHistory.length - CONFIG.VIRTUALIZATION_THRESHOLD - 1];
+          if (oldMessage) {
+            state.messageVirtualization.virtualizedMessages.push(oldMessage);
+          }
+        }
+        
+        await chatManager.renderMessage(messageData);
+        
+        // Auto-save memory periodically
+        if (state.chatHistory.length % 10 === 0) {
+          await memoryManager.saveMemory();
+        }
+        
+        // Auto-speak if enabled
+        if (!isUser && document.getElementById('auto-speak').checked && !state.isSpeaking) {
+          speechManager.speak(text);
+        }
+      },
+
+      async renderMessage(messageData) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message', messageData.isUser ? 'user-message' : 'ai-message');
+        messageDiv.dataset.messageId = messageData.id;
+        
+        const header = document.createElement('div');
+        header.classList.add('message-header');
+        header.innerHTML = messageData.isUser 
+          ? '<i class="fas fa-user"></i> User' 
+          : `<i class="fas fa-robot"></i> ${messageData.agentName || modelManager.getAgentName(DOM.primaryModelSelect.value)}`;
+        
+        const content = document.createElement('div');
+        content.classList.add('message-content');
+        content.innerHTML = messageData.isUser 
+          ? messageData.text 
+          : utils.safeMarkdown(messageData.text);
+        
+        messageDiv.appendChild(header);
+        messageDiv.appendChild(content);
+        
+        // Add feedback buttons
+        if (!messageData.isUser) {
+          const feedbackButtons = feedbackManager.renderFeedbackButtons(messageData.id);
+          messageDiv.appendChild(feedbackButtons);
+        }
+        
+        DOM.chatMessages.appendChild(messageDiv);
+        DOM.chatMessages.scrollTop = DOM.chatMessages.scrollHeight;
+      },
+
+      renderVisibleMessages: () => {
+        const start = Math.max(0, state.chatHistory.length - CONFIG.VIRTUALIZATION_THRESHOLD);
+        const visibleMessages = state.chatHistory.slice(start);
+        
+        DOM.chatMessages.innerHTML = '';
+        visibleMessages.forEach(msg => chatManager.renderMessage(msg));
+      },
+
+      async sendMessage() {
+        const message = DOM.userInput.value.trim();
+        if (!message || state.isProcessing) return;
+        
+        DOM.userInput.value = '';
+        await chatManager.addMessage(message, true);
+        
+        state.isProcessing = true;
+        DOM.userInput.disabled = true;
+        DOM.sendButton.disabled = true;
+        
+        // Search memory for relevant context
+        const relevantMemory = await memoryManager.searchMemory(message);
+        const context = relevantMemory.length > 0 
+          ? `Relevant context:\n${relevantMemory.map(m => m.text).join('\n')}\n\nUser: ${message}`
+          : message;
+        
+        const primaryModelId = DOM.primaryModelSelect.value;
+        const allAgents = [
+          { id: 'primary', name: modelManager.getAgentName(primaryModelId), model: primaryModelId, isProcessing: false },
+          ...state.activeAgents
+        ];
+        
+        const messageId = utils.generateId();
+        
+        // Initialize budget for primary agent if not exists
+        if (!state.agentBudgets.has('primary')) {
+          budgetManager.initAgentBudget('primary', primaryModelId);
+        }
+        
+        // Queue messages for all agents
+        allAgents.forEach(agent => {
+          if (!state.responseQueues[agent.id]) {
+            state.responseQueues[agent.id] = [];
+          }
+          state.responseQueues[agent.id].push({ message: context, messageId });
+          chatManager.processAgentQueue(agent);
+        });
+        
+        // Re-enable UI after a short delay
+        setTimeout(() => {
+          state.isProcessing = false;
+          DOM.userInput.disabled = false;
+          DOM.sendButton.disabled = false;
+          DOM.userInput.focus();
+        }, 500);
+      },
+
+      async processAgentQueue(agent) {
+        if (agent.isProcessing || !state.responseQueues[agent.id]?.length) return;
+        
+        agent.isProcessing = true;
+        const { message, messageId } = state.responseQueues[agent.id].shift();
+        
+        // Use reinforcement learning to select best model
+        let modelId = agent.model;
+        if (Math.random() < 0.1) { // 10% exploration
+          modelId = reinforcementManager.getBestModelForTask(message);
+        }
+        
+        try {
+          chatManager.showAgentTyping(agent);
+          const response = await apiManager.getAIResponse(message, modelId, agent.id);
+          chatManager.hideAgentTyping(agent);
+          
+          await chatManager.addMessage(response.text, false, agent.name, modelId);
+        } catch (err) {
+          chatManager.hideAgentTyping(agent);
+          await chatManager.addMessage(`Error: ${err.message}`, false, agent.name, modelId);
+          metricsManager.record(agent.id, modelId, performance.now() - Date.now(), 0, true);
+        } finally {
+          agent.isProcessing = false;
+          setTimeout(() => chatManager.processAgentQueue(agent), 100);
+        }
+      },
+
+      showAgentTyping: (agent) => {
+        const typingId = `typing-${agent.id}`;
+        if (document.getElementById(typingId)) return;
+        
+        const typingElement = document.createElement('div');
+        typingElement.className = 'agent-typing';
+        typingElement.id = typingId;
+        typingElement.innerHTML = `
+          <div class="agent-name">${agent.name}</div>
+          <div class="typing-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        `;
+        DOM.typingAgents.appendChild(typingElement);
+      },
+
+      hideAgentTyping: (agent) => {
+        const typingElement = document.getElementById(`typing-${agent.id}`);
+        if (typingElement) {
+          typingElement.style.opacity = '0';
+          setTimeout(() => typingElement.remove(), 300);
+        }
+      },
+
+      handleFileUpload: (file) => {
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          const messageDiv = document.createElement('div');
+          messageDiv.classList.add('message', 'user-message');
+          
+          const header = document.createElement('div');
+          header.classList.add('message-header');
+          header.innerHTML = '<i class="fas fa-user"></i> User';
+          
+          const content = document.createElement('div');
+          content.classList.add('message-content');
+          
+          if (file.type.startsWith('image/')) {
+            content.innerHTML = `<img src="${e.target.result}" alt="Uploaded image: ${file.name}">`;
+          } else if (file.type.startsWith('video/')) {
+            content.innerHTML = `<video controls src="${e.target.result}" aria-label="Uploaded video: ${file.name}"></video>`;
+          } else {
+            content.textContent = `Uploaded file: ${file.name}`;
+          }
+          
+          messageDiv.appendChild(header);
+          messageDiv.appendChild(content);
+          DOM.chatMessages.appendChild(messageDiv);
+          DOM.chatMessages.scrollTop = DOM.chatMessages.scrollHeight;
+          
+          // Save to memory
+          await memoryManager.saveMemory();
+        };
+        
+        reader.readAsDataURL(file);
+      }
+    };
+
+    // ============================================================================
+    // API MANAGEMENT
+    // ============================================================================
+    const apiManager = {
+      async checkConnection() {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 5000);
+          
+          await fetch(`${CONFIG.API_ENDPOINT}/health`, { 
+            method: 'GET', 
+            signal: controller.signal 
+          });
+          
+          clearTimeout(timeoutId);
+          utils.updateConnectionStatus('connected');
+          return true;
+        } catch (err) {
+          utils.updateConnectionStatus('disconnected');
+          utils.showNotification('Backend connection failed. Please check if the server is running.', 'error');
+          return false;
+        }
+      },
+
+      async getAIResponse(message, modelId, agentId = null) {
+        // Check budget before calling
+        if (agentId && !budgetManager.canCall(agentId, modelId)) {
+          return { text: "(Budget exceeded - call blocked)", tokens: 0 };
+        }
+        
+        const startTime = performance.now();
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 60000);
+        
+        try {
+          const response = await apiClient.chat(modelId, message, true, controller.signal);
+          
+          if (!response.body) throw new Error('No response body');
+          
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder('utf-8');
+          let fullText = '';
+          let buffer = '';
+          let tokenCount = 0;
+          
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop();
+            
+            for (const line of lines) {
+              if (!line.trim()) continue;
+              try {
+                const json = JSON.parse(line);
+                if (json.response) {
+                  fullText += json.response;
+                  tokenCount++;
+                }
+              } catch (e) {
+                console.warn('Failed to parse JSON line:', line, e);
+              }
+            }
+          }
+          
+          clearTimeout(timeoutId);
+          
+          const endTime = performance.now();
+          const latency = endTime - startTime;
+          
+          // Record metrics
+          if (agentId) {
+            metricsManager.record(agentId, modelId, Math.round(latency), tokenCount);
+          }
+          
+          return { text: fullText || "(No response received)", tokens: tokenCount };
+        } catch (err) {
+          clearTimeout(timeoutId);
+          
+          const endTime = performance.now();
+          
+          // Record failed metric
+          if (agentId) {
+            metricsManager.record(agentId, modelId, Math.round(endTime - startTime), 0, true);
+          }
+          
+          throw err;
+        }
+      }
+    };
+
+    // ============================================================================
+    // SPEECH MANAGEMENT
+    // ============================================================================
+    const speechManager = {
+      synth: window.speechSynthesis,
+      utterance: null,
+
+      speak: (text) => {
+        if (speechManager.utterance) {
+          speechManager.stop();
+        }
+        
+        speechManager.utterance = new SpeechSynthesisUtterance(text);
+        speechManager.utterance.onstart = () => {
+          state.isSpeaking = true;
+          DOM.speakButton.classList.add('speak-active');
+        };
+        speechManager.utterance.onend = () => {
+          speechManager.stop();
+        };
+        speechManager.utterance.onerror = (e) => {
+          console.error('Speech synthesis error:', e);
+          speechManager.stop();
+        };
+        
+        speechManager.synth.speak(speechManager.utterance);
+      },
+
+      stop: () => {
+        if (speechManager.synth.speaking) {
+          speechManager.synth.cancel();
+        }
+        speechManager.utterance = null;
+        state.isSpeaking = false;
+        DOM.speakButton.classList.remove('speak-active');
+      },
+
+      toggle: () => {
+        if (state.isSpeaking) {
+          speechManager.stop();
+        } else {
+          const aiMessages = DOM.chatMessages.querySelectorAll('.ai-message');
+          if (aiMessages.length > 0) {
+            const lastMessage = aiMessages[aiMessages.length - 1];
+            const text = lastMessage.querySelector('.message-content').textContent;
+            if (text.trim()) {
+              speechManager.speak(text);
+            }
+          }
+        }
+      }
+    };
+
+    // ============================================================================
+    // PERSISTENCE
+    // ============================================================================
+    const persistence = {
+      saveChat: () => {
+        if (state.chatHistory.length === 0) {
+          utils.showNotification('No chat to save!', 'error');
+          return;
+        }
+        
+        const chatName = DOM.chatNameInput.value.trim() || `Chat ${new Date().toLocaleString()}`;
+        const chatData = {
+          version: '1.0',
+          name: chatName,
+          timestamp: new Date().toISOString(),
+          primaryModel: DOM.primaryModelSelect.value,
+          history: state.chatHistory,
+          activeAgents: state.activeAgents,
+          metrics: Array.from(state.agentMetrics.entries()),
+          budgets: Array.from(state.agentBudgets.entries()),
+          globalBudget: state.globalBudget,
+          feedback: Array.from(state.feedback.entries()),
+          reinforcementScores: Array.from(state.reinforcementScores.entries())
+        };
+        
+        try {
+          const savedChats = JSON.parse(localStorage.getItem('capsuleChats') || '[]');
+          savedChats.push(chatData);
+          localStorage.setItem('capsuleChats', JSON.stringify(savedChats));
+          
+          DOM.chatNameInput.value = '';
+          persistence.updateSavedChatsList();
+          utils.showNotification(`Chat "${chatName}" saved successfully!`, 'success');
+        } catch (err) {
+          utils.showNotification('Failed to save chat: ' + err.message, 'error');
+        }
+      },
+
+      loadChat: (chatData) => {
+        try {
+          if (!chatData.version) {
+            throw new Error('Invalid chat data format');
+          }
+          
+          // Reset state
+          state.reset();
+          
+          // Restore data
+          DOM.primaryModelSelect.value = chatData.primaryModel || MODELS[0].id;
+          state.chatHistory = chatData.history || [];
+          state.activeAgents = chatData.activeAgents || [];
+          state.globalBudget = chatData.globalBudget || state.globalBudget;
+          
+          // Restore maps
+          if (chatData.metrics) {
+            chatData.metrics.forEach(([id, metrics]) => state.agentMetrics.set(id, metrics));
+          }
+          if (chatData.budgets) {
+            chatData.budgets.forEach(([id, budget]) => state.agentBudgets.set(id, budget));
+          }
+          if (chatData.feedback) {
+            chatData.feedback.forEach(([id, feedback]) => state.feedback.set(id, feedback));
+          }
+          if (chatData.reinforcementScores) {
+            chatData.reinforcementScores.forEach(([id, score]) => state.reinforcementScores.set(id, score));
+          }
+          
+          // Reinitialize queues
+          state.activeAgents.forEach(agent => {
+            state.responseQueues[agent.id] = [];
+          });
+          
+          // Update UI
+          agentManager.renderList();
+          chatManager.renderVisibleMessages();
+          metricsManager.render();
+          
+          DOM.chatHistoryMenu.style.display = 'none';
+          utils.showNotification('Chat loaded successfully!', 'success');
+        } catch (err) {
+          utils.showNotification('Failed to load chat: ' + err.message, 'error');
+        }
+      },
+
+      updateSavedChatsList: () => {
+        try {
+          const savedChats = JSON.parse(localStorage.getItem('capsuleChats') || '[]');
+          DOM.savedChatsList.innerHTML = '';
+          
+          if (savedChats.length === 0) {
+            DOM.savedChatsList.innerHTML = '<div class="saved-chat-item">No saved chats yet</div>';
+          } else {
+            savedChats
+              .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+              .forEach((chat, index) => {
+                const chatItem = document.createElement('div');
+                chatItem.className = 'saved-chat-item';
+                chatItem.setAttribute('role', 'listitem');
+                chatItem.innerHTML = `
+                  <div style="font-weight: bold;">${chat.name}</div>
+                  <div style="font-size: 0.8rem; opacity: 0.7;">${new Date(chat.timestamp).toLocaleString()}</div>
+                `;
+                chatItem.addEventListener('click', () => {
+                  if (confirm(`Load chat "${chat.name}"? This will replace the current conversation.`)) {
+                    persistence.loadChat(chat);
+                  }
+                });
+                DOM.savedChatsList.appendChild(chatItem);
+              });
+          }
+        } catch (err) {
+          console.error('Failed to update saved chats list:', err);
+        }
+      },
+
+      loadFromFile: (file) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const chatData = JSON.parse(e.target.result);
+            if (confirm('Load chat from file? This will replace the current conversation.')) {
+              persistence.loadChat(chatData);
+            }
+          } catch (err) {
+            utils.showNotification('Error loading chat file: ' + err.message, 'error');
+          }
+        };
+        reader.readAsText(file);
+      }
+    };
+
+    // ============================================================================
+    // EVENT LISTENERS (Enhanced)
+    // ============================================================================
+    const eventListeners = {
+      init: () => {
+        // Agent management
+        DOM.addAgentBtn.addEventListener('click', agentManager.add);
+        
+        // Chat input
+        DOM.sendButton.addEventListener('click', chatManager.sendMessage);
+        DOM.userInput.addEventListener('keypress', utils.debounce((e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            chatManager.sendMessage();
+          }
+        }, CONFIG.DEBOUNCE_DELAY));
+        
+        // File upload
+        DOM.uploadButton.addEventListener('click', () => DOM.fileUpload.click());
+        DOM.fileUpload.addEventListener('change', (e) => {
+          const file = e.target.files[0];
+          if (file) {
+            chatManager.handleFileUpload(file);
+          }
+          e.target.value = '';
+        });
+        
+        // Tools menu
+        DOM.toolsButton.addEventListener('click', () => {
+          const isVisible = DOM.toolsMenu.style.display === 'block';
+          DOM.toolsMenu.style.display = isVisible ? 'none' : 'block';
+          DOM.toolsMenu.setAttribute('aria-hidden', isVisible);
+        });
+        
+        // History menu
+        DOM.historyButton.addEventListener('click', () => {
+          const isVisible = DOM.chatHistoryMenu.style.display === 'block';
+          DOM.chatHistoryMenu.style.display = isVisible ? 'none' : 'block';
+          DOM.chatHistoryMenu.setAttribute('aria-hidden', isVisible);
+          persistence.updateSavedChatsList();
+        });
+        
+        // Metrics panel
+        DOM.metricsButton.addEventListener('click', () => {
+          const isVisible = DOM.metricsPanel.style.display === 'block';
+          DOM.metricsPanel.style.display = isVisible ? 'none' : 'block';
+          DOM.metricsPanel.setAttribute('aria-hidden', isVisible);
+          metricsManager.render();
+        });
+        
+        // Reinforcement panel
+        DOM.reinforcementButton.addEventListener('click', () => {
+          const isVisible = DOM.reinforcementPanel.classList.contains('active');
+          DOM.reinforcementPanel.classList.toggle('active');
+          DOM.reinforcementPanel.setAttribute('aria-hidden', !isVisible);
+          if (!isVisible) {
+            reinforcementManager.renderScores();
+          }
+        });
+        
+        // Fine-tune menu
+        DOM.fineTuneButton.addEventListener('click', () => {
+          const isVisible = DOM.fineTuneMenu.style.display === 'block';
+          DOM.fineTuneMenu.style.display = isVisible ? 'none' : 'block';
+          DOM.fineTuneMenu.setAttribute('aria-hidden', isVisible);
+        });
+        
+        // Speech
+        DOM.speakButton.addEventListener('click', speechManager.toggle);
+        
+        // Persistence
+        DOM.saveChatButton.addEventListener('click', persistence.saveChat);
+        DOM.loadChatButton.addEventListener('click', () => DOM.loadChatFile.click());
+        DOM.loadChatFile.addEventListener('change', (e) => {
+          const file = e.target.files[0];
+          if (file) persistence.loadFromFile(file);
+          e.target.value = '';
+        });
+        
+        // Settings
+        DOM.settingsButton.addEventListener('click', () => {
+          const isVisible = DOM.settingsMenu.style.display === 'block';
+          DOM.settingsMenu.style.display = isVisible ? 'none' : 'block';
+          DOM.settingsMenu.setAttribute('aria-hidden', isVisible);
+        });
+        
+        // Settings controls
+        DOM.enableBudgetLimit.addEventListener('change', (e) => {
+          state.settings.enableBudgetLimit = e.target.checked;
+        });
+        
+        DOM.budgetLimit.addEventListener('change', (e) => {
+          state.settings.budgetLimit = parseFloat(e.target.value) || CONFIG.DEFAULT_BUDGET;
+          state.globalBudget.maxCost = state.settings.budgetLimit;
+        });
+        
+        DOM.enableCallLimits.addEventListener('change', (e) => {
+          state.settings.enableCallLimits = e.target.checked;
+        });
+        
+        DOM.maxCallsPerAgent.addEventListener('change', (e) => {
+          state.settings.maxCallsPerAgent = parseInt(e.target.value) || 100;
+          // Update existing agent budgets
+          state.agentBudgets.forEach(budget => {
+            budget.maxCalls = state.settings.maxCallsPerAgent;
+          });
+        });
+        
+        DOM.enableGlobalCallLimit.addEventListener('change', (e) => {
+          state.settings.enableGlobalCallLimit = e.target.checked;
+        });
+        
+        DOM.globalMaxCalls.addEventListener('change', (e) => {
+          state.settings.globalMaxCalls = parseInt(e.target.value) || 1000;
+        });
+        
+        // Adaptive budget controls
+        DOM.enableAdaptiveBudget.addEventListener('change', (e) => {
+          state.settings.enableAdaptiveBudget = e.target.checked;
+        });
+        
+        DOM.autoExpandBudget.addEventListener('change', (e) => {
+          state.settings.autoExpandBudget = e.target.checked;
+        });
+        
+        DOM.autoReduceBudget.addEventListener('change', (e) => {
+          state.settings.autoReduceBudget = e.target.checked;
+        });
+        
+        DOM.budgetExpansionRate.addEventListener('change', (e) => {
+          state.settings.budgetExpansionRate = parseInt(e.target.value) || 50;
+        });
+        
+        DOM.resetBudgetsBtn.addEventListener('click', () => {
+          if (confirm('Reset all budgets and counters?')) {
+            budgetManager.resetAll();
+          }
+        });
+        
+        // Fine-tuning controls
+        DOM.startFineTuneBtn.addEventListener('click', () => {
+          const modelId = DOM.fineTuneModelSelect.value;
+          const dataSource = DOM.trainingDataSource.value;
+          const epochs = parseInt(DOM.fineTuneEpochs.value);
+          const lr = parseFloat(DOM.fineTuneLr.value);
+          
+          fineTuneManager.startFineTune(modelId, dataSource, epochs, lr);
+        });
+        
+        DOM.cancelFineTuneBtn.addEventListener('click', () => {
+          fineTuneManager.cancelFineTune();
+        });
+        
+        DOM.autoFineTune.addEventListener('change', (e) => {
+          state.settings.autoFineTune = e.target.checked;
+        });
+        
+        // Close menus when clicking outside
+        document.addEventListener('click', (e) => {
+          if (!DOM.toolsMenu.contains(e.target) && !DOM.toolsButton.contains(e.target)) {
+            DOM.toolsMenu.style.display = 'none';
+            DOM.toolsMenu.setAttribute('aria-hidden', 'true');
+          }
+          if (!DOM.chatHistoryMenu.contains(e.target) && !DOM.historyButton.contains(e.target)) {
+            DOM.chatHistoryMenu.style.display = 'none';
+            DOM.chatHistoryMenu.setAttribute('aria-hidden', 'true');
+          }
+          if (!DOM.metricsPanel.contains(e.target) && !DOM.metricsButton.contains(e.target)) {
+            DOM.metricsPanel.style.display = 'none';
+            DOM.metricsPanel.setAttribute('aria-hidden', 'true');
+          }
+          if (!DOM.settingsMenu.contains(e.target) && !DOM.settingsButton.contains(e.target)) {
+            DOM.settingsMenu.style.display = 'none';
+            DOM.settingsMenu.setAttribute('aria-hidden', 'true');
+          }
+          if (!DOM.fineTuneMenu.contains(e.target) && !DOM.fineTuneButton.contains(e.target)) {
+            DOM.fineTuneMenu.style.display = 'none';
+            DOM.fineTuneMenu.setAttribute('aria-hidden', 'true');
+          }
+          if (!DOM.reinforcementPanel.contains(e.target) && !DOM.reinforcementButton.contains(e.target)) {
+            DOM.reinforcementPanel.classList.remove('active');
+            DOM.reinforcementPanel.setAttribute('aria-hidden', 'true');
+          }
+        });
+        
+        // Scroll virtualization
+        DOM.chatMessages.addEventListener('scroll', utils.debounce(() => {
+          if (state.messageVirtualization.enabled && state.chatHistory.length > CONFIG.VIRTUALIZATION_THRESHOLD) {
+            if ('requestIdleCallback' in window) {
+              requestIdleCallback(() => chatManager.renderVisibleMessages(), { timeout: 500 });
+            }
+          }
+        }, CONFIG.DEBOUNCE_DELAY));
+        
+        // Model change handlers
+        DOM.primaryModelSelect.addEventListener('change', () => {
+          metricsManager.render();
+        });
+      }
+    };
+
+    // ============================================================================
+    // INITIALIZATION
+    // ============================================================================
+    const app = {
+      init: async () => {
+        // Populate model selects
+        modelManager.populateSelects();
+        
+        // Check backend connection
+        await apiManager.checkConnection();
+        
+        // Set up periodic connection checks
+        setInterval(apiManager.checkConnection, CONFIG.CONNECTION_CHECK_INTERVAL);
+        
+        // Load reinforcement scores
+        await reinforcementManager.loadScores();
+        
+        // Load memory from backend
+        const memory = await memoryManager.loadMemory();
+        if (memory && memory.context) {
+          // Pre-populate chat with memory context
+          memory.context.slice(-5).forEach(msg => {
+            chatManager.renderMessage({
+              id: utils.generateId(),
+              text: msg.content,
+              isUser: msg.role === 'user',
+              agentName: msg.model ? modelManager.getAgentName(msg.model) : null,
+              modelId: msg.model,
+              timestamp: msg.timestamp
+            });
+          });
+        }
+        
+        // Initialize event listeners
+        eventListeners.init();
+        
+        // Focus input
+        DOM.userInput.focus();
+        
+        utils.showNotification('Application initialized successfully', 'success');
+      }
+    };
+
+    // ============================================================================
+    // START APPLICATION
+    // ============================================================================
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', app.init);
+    } else {
+      app.init();
+    }
+
+    // Handle page unload
+    window.addEventListener('beforeunload', async () => {
+      if (state.isSpeaking) {
+        speechManager.stop();
+      }
+      
+      // Save memory to backend
+      await memoryManager.saveMemory();
+      
+      // Save non-sensitive state
+      const stateToSave = {
+        primaryModel: DOM.primaryModelSelect.value,
+        timestamp: new Date().toISOString()
+      };
+      localStorage.setItem('capsuleState', JSON.stringify(stateToSave));
+    });
+  </script>
+</body>
+</html>
+
 
     Provides a persistent, lineage‑marked environment for experimenting with models, memory, and creative rituals.
 
